@@ -59,16 +59,15 @@
 module prefetcherTop(
 	input					clk,
 	
-	// Not enough pins
-	// input	[31:0]	rf_i 		[15:0],
-	
 	// Trigger is high for one cycle only.
 	input					trigger,
 	input					reset,
 	
 	// Cache & Store buffer
 	output				cache_data_req_o,
+	output	[31:0]	cache_r_addr_o,
 	output				strBuf_data_req_o,
+	output	[31:0]	strBuf_r_addr_o,
 	
 	input					wait_cache,
 	input					wait_strBuf,
@@ -102,15 +101,18 @@ assign w_addr_o = w_addr;
 assign w_data_o = w_data;
 
 reg	[31:0]	cache_data;
-wire	[31:0]	strBuf_data;
+reg	[31:0]	strBuf_data;
 
 
-
-reg		cache_data_req;
-reg		strBuf_data_req;
+reg				cache_data_req;
+reg	[31:0]	cache_r_addr;
+reg				strBuf_data_req;
+reg	[31:0]	strBuf_r_addr;
 
 assign cache_data_req_o		= cache_data_req;
+assign cache_r_addr_o		= cache_r_addr;
 assign strBuf_data_req_o	= strBuf_data_req;
+assign strBuf_r_addr_o		= strBuf_r_addr;
 
 //parameter ld_latency = 3;
 //
@@ -156,6 +158,10 @@ always @(posedge clk) begin
 	end
 	else if (wait_cache | wait_strBuf) begin
 		// Wait for loads
+		// Lower the requests
+		cache_data_req		<= 'b0;
+		strBuf_data_req	<= 'b0;
+		
 		if (wait_cache & cache_data_ready) begin
 			cache_data <= cache_data_i;
 		end
@@ -197,64 +203,47 @@ always @(posedge clk) begin
 					'd0: begin
 						// ldr	r1, [sp, #16]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[13] + 'd16;
 
 						state_cycle <= 'd1;
 					end
 					'd1: begin
-						// Need a cycle to lower the request flag
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd2;
-					end
-					'd2: begin
 						// ldr	r6, [r1, #0]
 						cache_data_req	<= 'b1;
-						
+						cache_r_addr	<= cache_data;
+
 						// movs	r1, #0
 						rf[1]			<= 'b0;
 						
-						state_cycle <= 'd3;
+						state_cycle <= 'd2;
 					end
-					'd3: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd4;
-					end
-					'd4: begin
+					'd2: begin
 						rf[6]			<= cache_data;
 						
 						// ldr	r3, [r6, #0]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= cache_data;
 						
 						// str	r1, [sp, #4]						
 						w_addr		= rf[13] + 'd4;
 						w_data		= rf[1];
 						
-						state_cycle <= 'd5;
+						state_cycle <= 'd3;
 					end
-					'd5: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd6;
-					end
-					'd6: begin
+					'd3: begin
 						rf[3]			<= cache_data;
 						
 						// ldr.w	fp, [r0, #8]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[0] + 'd8;
 						
 						// str	r6, [sp, #8]
 						w_addr		= rf[13] + 'd8;
 						w_data		= rf[6];
 						
-						state_cycle <= 'd7;
+						state_cycle <= 'd4;
 					end
-					'd7: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd8;
-					end
-					'd8: begin
+					'd4: begin
 						rf[11]		<= cache_data;
 						
 						state_cycle <= 'd0;
@@ -277,15 +266,11 @@ always @(posedge clk) begin
 						
 						// ldr.w	r3, [fp, r3, lsl #2]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[11] + (rf[3] << 2);
 						
 						state_cycle <= 'd1;
 					end
 					'd1: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd2;
-					end
-					'd2: begin
 						rf[3]		<= cache_data;
 					
 						// add.w	sl, fp, r7, lsl #2
@@ -293,18 +278,14 @@ always @(posedge clk) begin
 					
 						// ldr	r1, [r0, #4]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[0] + 'd4;
 						
 						// mov.w	r8, r3, lsl #2
 						rf[8]		<= rf[3] << 2;
 						
-						state_cycle <= 'd3;
+						state_cycle <= 'd2;
 					end
-					'd3: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd4;
-					end
-					'd4: begin
+					'd2: begin
 						rf[1]		<= cache_data;
 						
 						// add.w	r9, r1, r8
@@ -338,57 +319,41 @@ always @(posedge clk) begin
 					'd1: begin
 						// ldr.w	r4, [r9, r1]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[9] + rf[1];
 						
 						state_cycle <= 'd2;
 					end
 					'd2: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd3;
-					end
-					'd3: begin
 						rf[4]		<= cache_data;
 						
 						// delinquent: ldr.w	r5, [r2, r4, lsl #2]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[2] + (rf[4] << 2);
 						
-						state_cycle <= 'd4;
+						state_cycle <= 'd3;
 					end
-					'd4: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd5;
-					end
-					'd5: begin
+					'd3: begin
 						rf[5]		<= cache_data;
 						
 						// ldr	r4, [r0, #16]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[0] + 'd16;
 						
-						state_cycle	<= 'd6;
+						state_cycle	<= 'd4;
 					end
-					'd6: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd7;
-					end
-					'd7: begin
+					'd4: begin
 						rf[4]		<= cache_data;
 						
 						// ldr.w	r5, [sl]
 						cache_data_req	<= 'b1;
+						cache_r_addr	<= rf[10];
 						
 						// adds	r3, #1
 						rf[3]		<= rf[3] + 1;
 						
-						state_cycle	<= 'd8;
+						state_cycle	<= 'd5;
 					end
-					'd8: begin
-						cache_data_req <= 'b0;
-						
-						state_cycle	<= 'd9;
-					end
-					'd9: begin
+					'd5: begin
 						rf[5]		<= cache_data;
 						
 						// cmp	r3, r5
@@ -416,37 +381,29 @@ always @(posedge clk) begin
 					'd0: begin
 						// ldr	r3, [sp, #16]
 						cache_data_req		<= 'b1;
+						cache_r_addr		<= rf[13] + 'd16;
 						
 						// ldr	r1, [sp, #4]
 						// Load from the store buffer, so OK to load in the same cycle
 						strBuf_data_req	<= 'b1;
+						strBuf_r_addr		<= rf[13] + 'd4;
 						
 						state_cycle <= 'd1;
 					end
 					'd1: begin
-						cache_data_req		<= 'b0;
-						strBuf_data_req	<= 'b0;
-						
-						state_cycle	<= 'd2;
-					end
-					'd2: begin
 						rf[3]			<= cache_data;
 						rf[1]			<= strBuf_data;
 						
 						// ldr	r5, [r3, #8]
 						cache_data_req		<= 'b1;
+						cache_r_addr		<= rf[3] + 'd8;
 						
 						// adds	r1, #1
 						rf[1]			<= rf[1] + 'd1;
 						
-						state_cycle <= 'd3;
+						state_cycle <= 'd2;
 					end
-					'd3: begin
-						cache_data_req	<= 'b0;
-						
-						state_cycle	<= 'd4;
-					end
-					'd4: begin
+					'd2: begin
 						rf[5]			<= cache_data;
 						
 						// str	r1, [sp, #4]						
@@ -479,19 +436,15 @@ always @(posedge clk) begin
 						// ldr	r1, [sp, #8]
 						// Load from the store buffer
 						strBuf_data_req	<= 'b1;
+						strBuf_r_addr		<= rf[13] + 'd8;
 						
 						// ldr.w	r3, [r1, #4]
 						cache_data_req		<= 'b1;
+						cache_r_addr		<= rf[1] + 'd4;
 						
-						state_cycle		<= 'd1;
+						state_cycle			<= 'd1;
 					end
 					'd1: begin
-						cache_data_req		<= 'b0;
-						strBuf_data_req	<= 'b0;
-						
-						state_cycle	<= 'd2;
-					end
-					'd2: begin
 						rf[1]		<= strBuf_data;
 						rf[3]		<= cache_data;
 			
@@ -525,15 +478,11 @@ always @(posedge clk) begin
 						// ldr	r3, [sp, #20]
 						// Load from the store buffer
 						strBuf_data_req	<= 'b1;
+						strBuf_r_addr		<= rf[13] + 'd20;
 						
-						state_cycle		<= 'd1;
+						state_cycle			<= 'd1;
 					end
 					'd1: begin
-						strBuf_data_req	<= 'b0;
-						
-						state_cycle	<= 'd2;
-					end
-					'd2: begin
 						// subs	r3, #1
 						rf[3]		<= cache_data - 1;
 						
