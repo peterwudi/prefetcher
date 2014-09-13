@@ -35,7 +35,7 @@ prefetcherTop dut ( .* );
 initial clk = '1;
 always #10 clk = ~clk;  // 50 MHz clock
 
-localparam numCacheLoads	= 100;
+localparam numCacheLoads	= 10;
 localparam numStrBufLoads	= 10;
 localparam cache_latency	= 3;
 localparam strBuf_latency	= 3;
@@ -65,7 +65,7 @@ initial begin
 	strBufData_inFile	= $fopen("strBufData", "r");
 	strBufAddr_inFile	= $fopen("strBufAddr", "r");
 	
-	for (int ix = 0; i < numCacheLoads; i++) begin
+	for (int ix = 0; ix < numCacheLoads; ix++) begin
 		integer in1, in2;
 		
 		// Read from file
@@ -73,7 +73,7 @@ initial begin
 		in2 = $fscanf(cacheAddr_inFile, "%h", cache_addr_arr[ix]);
 	end
 	
-	for (int iy = 0; i < numStrBufLoads; i++) begin
+	for (int iy = 0; iy < numStrBufLoads; iy++) begin
 		integer in3, in4;
 		
 		// Read from file
@@ -118,7 +118,7 @@ initial begin
 		if (cache_data_req_o == 1 && strBuf_data_req_o == 1) begin
 			if ((cache_r_addr_o != cache_addr_arr[i]) || (strBuf_r_addr_o != strBuf_addr_arr[j])) begin
 				$display("cacheAddr: %d, cacheAddr_g: %d, strBufAddr: %d, strBufAddr_g: %d, strat time: ",
-						cache_r_addr_o, cache_addr_arr[i], strBuf_r_addr_o, strBuf_addr_arr[j], $time);
+						cache_r_addr_o, cache_addr_arr[i], strBuf_r_addr_o[j], strBuf_addr_arr[j], $time);
 				failed = 'b1;
 			end
 			
@@ -141,7 +141,7 @@ initial begin
 		else if (cache_data_req_o == 1) begin
 			if (cache_r_addr_o != cache_addr_arr[i]) begin
 				$display("cacheAddr: %d, cacheAddr_g: %d, strat time: ",
-						cache_r_addr_o, cache_addr_arr[i], strBuf_r_addr_o, strBuf_addr_arr[j], $time);
+						cache_r_addr_o, cache_addr_arr[i], $time);
 				failed = 'b1;
 			end
 			
@@ -160,7 +160,7 @@ initial begin
 		else if (strBuf_data_req_o == 1) begin
 			if (strBuf_r_addr_o != strBuf_addr_arr[j]) begin
 				$display("strBufAddr: %d, strBufAddr_g: %d, strat time: ",
-						strBuf_r_addr_o, strBuf_addr_arr[j], $time);
+						strBuf_r_addr_o[j], strBuf_addr_arr[j], $time);
 				failed = 'b1;
 			end
 			

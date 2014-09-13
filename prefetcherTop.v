@@ -1,61 +1,4 @@
 
-//module L1_cache(
-//	input					clk,
-//	input					cache_ld_req /*synthesis keep*/,
-//	
-//	// Data comes from the testbench, this module fakes the
-//	// cache access latency by signaling data_ready after
-//	// a fixed number of cycles
-//	output				data_ready
-//)
-//parameter	ld_latency = 3;
-//
-//genvar i;
-//generate
-//	for (i = 0; i < ld_latency; i = i + 1) begin: cache
-//		always @(posedge clk) begin
-//			if (i == ld_latency) begin
-//				data_ready <= 1;
-//			end
-//			else begin
-//				data_ready <= 0;
-//			end
-//		end
-//	end
-//endgenerate	
-//
-//endmodule
-//
-//module storeBuf(
-//	input					clk,
-//	input		[31:0]	w_data /*synthesis keep*/,
-//	input		[17:0]	w_addr /*synthesis keep*/,
-//	
-//	input		[17:0]	r_addr /*synthesis keep*/,
-//	
-//	// Data comes from the testbench, this module fakes the
-//	// store buffer access latency by signaling data_ready after
-//	// a fixed number of cycles
-//	output				data_ready
-//)
-//parameter	ld_latency = 3;
-//
-//genvar i;
-//generate
-//	for (i = 0; i < ld_latency; i = i + 1) begin: strBuf
-//		always @(posedge clk) begin
-//			if (i == ld_latency) begin
-//				data_ready <= 1;
-//			end
-//			else begin
-//				data_ready <= 0;
-//			end
-//		end
-//	end
-//endgenerate	
-//
-//endmodule
-
 module prefetcherTop(
 	input					clk,
 	
@@ -113,25 +56,6 @@ assign cache_data_req_o		= cache_data_req;
 assign cache_r_addr_o		= cache_r_addr;
 assign strBuf_data_req_o	= strBuf_data_req;
 assign strBuf_r_addr_o		= strBuf_r_addr;
-
-//parameter ld_latency = 3;
-//
-//L1_cache #(.ld_latency(ld_latency))
-//L1_cache(
-//	.clk(clk),
-//	.r_addr(r_addr),
-//	.data_ready(cache_data_ready)
-//);
-//
-//storeBuf #(.ld_latency(ld_latency))
-//storeBuf storeBuf(
-//	.clk(clk),
-//	.w_data(w_data),
-//	.w_addr(w_addr)
-//	.r_addr(strBuf_r_addr),
-//	.data_ready(strBuf_data_ready)
-//);
-//
 
 always @(posedge clk) begin	
 	if (reset) begin
