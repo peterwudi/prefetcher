@@ -1,0 +1,32 @@
+d160:	ldr	r3, [r0, #12]
+d166:	ldr.w	r1, [r3, r1, lsl #2]
+d16a:	ldr.w	r3, [r3, r2, lsl #2]
+d16e:	ldr	r2, [r1, #0]
+d170:	adds	r0, r2, #1
+d172:	beq.n	d188 <_ZNK6Kernel13kernel_linearEii+0x28>
+d174:	ldr	r0, [r3, #0]
+d17c:	cmp	r0, r2
+d17e:	beq.n	d194 <_ZNK6Kernel13kernel_linearEii+0x34>
+d18c:	bx	lr
+d198:	vldr	d6, [r3, #8]
+d19c:	ldr	r2, [r1, #16]
+d1a2:	adds	r3, #16
+d1a4:	adds	r1, #16
+d1a6:	b.n	d170 <_ZNK6Kernel13kernel_linearEii+0x10>
+d3bc:	ldr	r2, [r4, #8]
+d3c6:	asrs	r0, r2, #1
+d3d2:	lsls	r3, r2, #31
+d3d4:	mov	r1, r5
+d3da:	ittet	mi
+d3dc:	ldrmi	r2, [r4, r0]
+d3de:	ldrmi	r3, [r4, #4]
+d3e0:	ldrpl	r3, [r4, #4]
+d3e2:	ldrmi	r3, [r2, r3]
+d3e4:	it	pl
+d3e6:	asrpl	r0, r2, #1
+d3e8:	adds	r0, r4, r0
+d3ea:	mov	r2, r6
+d3ec:	blx	r3
+d3ee:	adds	r6, #1
+d3f2:	cmp	r6, r9
+d404:	bne.n	d3ba <_ZNK5SVC_Q5get_QEii+0x22>

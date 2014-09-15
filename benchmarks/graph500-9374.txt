@@ -1,0 +1,47 @@
+9338:	ldr.w	sl, [r9, #8]!
+933c:	ldr	r0, [sp, #36]
+933e:	add.w	r3, r0, sl, lsl #3
+9346:	ldrd	r4, r5, [r3]
+9352:	ldrd	r2, r3, [sp, #24]
+935e:	strd	r2, r3, [sp, #8]
+9362:	b.n	938c <make_bfs_tree+0x140>
+9364:	add.w	r2, r7, r0, lsl #4
+9368:	ldr	r1, [r2, #8]
+936a:	ldr	r6, [r2, #12]
+936c:	add.w	r0, r8, r1, lsl #3
+9370:	add.w	r4, lr, r4, lsl #3
+9374:	ldrd	r2, r3, [r0]
+9378:	cmp	r2, #0
+937a:	sbcs.w	r5, r3, #0
+937e:	blt.n	93a4 <make_bfs_tree+0x158>
+9380:	ldrd	r4, r5, [r4]
+9384:	cmp	r4, #0
+9386:	sbcs.w	r6, r5, #0
+938a:	blt.n	93d0 <make_bfs_tree+0x184>
+938e:	mov.w	r0, r4, rrx
+9392:	and.w	r2, r4, #1
+9396:	lsls	r3, r0, #4
+9398:	cmp	r2, #0
+939a:	bne.n	9364 <make_bfs_tree+0x118>
+939c:	adds	r2, r7, r3
+939e:	ldr	r1, [r7, r3]
+93a0:	ldr	r6, [r2, #4]
+93a2:	b.n	936c <make_bfs_tree+0x120>
+93a6:	movs	r2, #1
+93a8:	ldrd	sl, fp, [sp, #8]
+93ac:	movs	r3, #0
+93ae:	adds.w	sl, sl, r2
+93b6:	adc.w	fp, fp, r3
+93c2:	strd	sl, fp, [sp, #8]
+93ce:	b.n	9380 <make_bfs_tree+0x134>
+93d0:	ldrd	r4, r5, [sp, #8]
+93d4:	ldrd	r0, r1, [sp, #16]
+93d8:	movs	r2, #1
+93da:	movs	r3, #0
+93dc:	adds	r0, r0, r2
+93de:	adc.w	r1, r1, r3
+93e2:	strd	r0, r1, [sp, #16]
+93e6:	cmp	r0, r4
+93e8:	sbcs.w	r5, r1, r5
+93ec:	blt.n	9410 <make_bfs_tree+0x1c4>
+9418:	b.n	9338 <make_bfs_tree+0xec>

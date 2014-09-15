@@ -1,0 +1,39 @@
+951a	ldr	r1, [sp, #16]
+951e	ldr	r6, [r1, #0]
+9522	ldr	r3, [r6, #0]
+952c	ldr.w	fp, [r0, #8]
+9532	movs	r1, #0
+9534	str	r6, [sp, #8]
+9536	str	r1, [sp, #4]
+9538	adds	r7, r3, #1
+953a	ldr.w	r3, [fp, r3, lsl #2]
+9546	add.w	sl, fp, r7, lsl #2
+9554	ldr	r1, [r0, #4]
+9556	mov.w	r8, r3, lsl #2
+955c	add.w	r9, r1, r8
+9560	movs	r1, #0
+9564	b.n	956e <sm_sv_mul+0x66>
+9568	adds	r1, #4
+956e	ldr.w	r4, [r9, r1]
+9576	ldr.w	r5, [r2, r4, lsl #2]
+9582	ldr	r4, [r0, #16]
+9588	ldr.w	r5, [sl]
+958c	adds	r3, #1
+958e	cmp	r3, r5
+9590	blt.n	9566 <sm_sv_mul+0x5e>
+9592	ldr	r3, [sp, #16]
+9594	ldr	r5, [r3, #8]
+9596	ldr	r1, [sp, #4]
+9598	adds	r1, #1
+959a	str	r1, [sp, #4]
+959c	cmp	r1, r5
+959e	bge.n	95c2 <sm_sv_mul+0xba>
+95a0	ldr	r1, [sp, #8]
+95a2	ldr.w	r3, [r1, #4]!
+95a6	cmp	r3, r4
+95a8	str	r1, [sp, #8]
+95b2	ble.n	9538 <sm_sv_mul+0x30>
+95c2	ldr	r3, [sp, #20]
+95c4	subs	r3, #1
+95c6	str	r3, [sp, #20]
+95c8	bne.n	9516 <sm_sv_mul+0xe>
