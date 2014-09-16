@@ -7,6 +7,10 @@ always @(posedge clk) begin
 		state_cycle		<= 'b0;
 		cache_data		<= 'b0;
 		strBuf_data		<= 'b0;
+		c					<= 'b0;
+		z					<= 'b0;
+		n					<= 'b0;
+		v					<= 'b0;
 		rf[0] 			<= 'b0;
 		rf[1] 			<= 'b0;
 		rf[2] 			<= 'b0;

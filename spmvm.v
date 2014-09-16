@@ -6,6 +6,10 @@ always @(posedge clk) begin
 		state_cycle		<= 'b0;
 		cache_data		<= 'b0;
 		strBuf_data		<= 'b0;
+		c					<= 'b0;
+		z					<= 'b0;
+		n					<= 'b0;
+		v					<= 'b0;
 		rf[0] 			<= 'b0;
 		rf[1] 			<= 'b0;
 		rf[2] 			<= 'b0;
@@ -193,7 +197,7 @@ always @(posedge clk) begin
 					'd2: begin
 						rf[4]		<= cache_data;
 						
-						// delinquent: ldr.w	r5, [r2, r4, lsl #2]
+						// DLI: ldr.w	r5, [r2, r4, lsl #2]
 						cache_data_req	<= 'b1;
 						cache_r_addr	<= rf[2] + (rf[4] << 2);
 						

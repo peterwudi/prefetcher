@@ -1,6 +1,6 @@
-`define		spmvm
+//`define		spmvm
 //`define	svm
-//`define	graph
+`define	graph
 
 
 
@@ -40,6 +40,14 @@ reg	[31:0]	rf			[15:0];
 reg	[3:0]		state;
 reg 	[4:0] 	state_cycle;
 
+// Temp register
+reg	[31:0]	temp;
+reg	[32:0]	carry_test;	
+
+
+// Flags
+reg	c, z, n, v = 1'b0;
+
 assign outState = state;
 
 reg	[31:0]	w_addr;
@@ -48,8 +56,8 @@ reg	[31:0]	w_data;
 assign w_addr_o = w_addr;
 assign w_data_o = w_data;
 
-reg	[31:0]	cache_data;
-reg	[31:0]	strBuf_data;
+reg signed	[31:0]	cache_data;
+reg signed	[31:0]	strBuf_data;
 
 
 reg				cache_data_req;
