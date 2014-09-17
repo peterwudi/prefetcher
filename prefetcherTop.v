@@ -1,6 +1,6 @@
-//`define		spmvm
+`define		spmvm
 //`define	svm
-`define	graph
+//`define	graph
 
 
 
@@ -13,9 +13,10 @@ module prefetcherTop(
 	
 	// Cache & Store buffer
 	output				cache_data_req_o,
-	output	[31:0]	cache_r_addr_o,
+	output	[31:0]	cache_r_addr_o		[1:0],
 	output				strBuf_data_req_o,
-	output	[31:0]	strBuf_r_addr_o,
+	output	[31:0]	strBuf_r_addr_o	[1:0],
+	output				strBufWren			[1:0],
 	
 	input					wait_cache,
 	input					wait_strBuf,
@@ -23,11 +24,11 @@ module prefetcherTop(
 	input					cache_data_ready,
 	input					strBuf_data_ready,
 
-	input		[31:0]	cache_data_i,
-	input		[31:0]	strBuf_data_i,
+	input		[31:0]	cache_data_i	[1:0],
+	input		[31:0]	strBuf_data_i	[1:0],
 	
-	output	[31:0]	w_addr_o,
-	output	[31:0]	w_data_o,
+	output	[31:0]	w_addr_o	[1:0],
+	output	[31:0]	w_data_o	[1:0],
 	
 	
 	// Misc
@@ -50,25 +51,32 @@ reg	c, z, n, v = 1'b0;
 
 assign outState = state;
 
-reg	[31:0]	w_addr;
-reg	[31:0]	w_data;
+reg	[31:0]	w_addr	[1:0];
+reg	[31:0]	w_data	[1:0];
+reg				wren		[1:0];
 
-assign w_addr_o = w_addr;
-assign w_data_o = w_data;
+assign w_addr_o[0] = w_addr[0];
+assign w_addr_o[1] = w_addr[1];
+assign w_data_o[0] = w_data[0];
+assign w_data_o[1] = w_data[1];
 
-reg signed	[31:0]	cache_data;
-reg signed	[31:0]	strBuf_data;
+reg signed	[31:0]	cache_data		[1:0];
+reg signed	[31:0]	strBuf_data		[1:0];
 
 
 reg				cache_data_req;
-reg	[31:0]	cache_r_addr;
+reg	[31:0]	cache_r_addr	[1:0];
 reg				strBuf_data_req;
-reg	[31:0]	strBuf_r_addr;
+reg	[31:0]	strBuf_r_addr	[1:0];
 
 assign cache_data_req_o		= cache_data_req;
-assign cache_r_addr_o		= cache_r_addr;
+assign cache_r_addr_o[0]	= cache_r_addr[0];
+assign cache_r_addr_o[1]	= cache_r_addr[1];
 assign strBuf_data_req_o	= strBuf_data_req;
-assign strBuf_r_addr_o		= strBuf_r_addr;
+assign strBuf_r_addr_o[0]	= strBuf_r_addr[0];
+assign strBuf_r_addr_o[1]	= strBuf_r_addr[1];
+assign strBufWren[0]			= wren[0];
+assign strBufWren[1]			= wren[1];
 
 
 `include "spmvm.v"
