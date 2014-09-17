@@ -37,7 +37,7 @@ module prefetcherTop(
 
 // R11: FP, R10: SL, R13: SP, R14: LR, R15: PC.
 
-reg	[31:0]	rf			[15:0];
+reg	[31:0]	rf			[15:0] /*synthesis keep*/;
 reg	[3:0]		state;
 reg 	[4:0] 	state_cycle;
 

@@ -123,7 +123,6 @@ always @(posedge clk) begin
 					end
 					'd3: begin
 						// r3 will be overwritten
-						//rf[3]			<= cache_data[0];
 						wren[0]		<= 1'b0;
 						
 						// 9538	adds	r7, r3, #1
@@ -131,7 +130,9 @@ always @(posedge clk) begin
 						
 						// 9546	add.w	sl, fp, r7, lsl #2
 						// Dependent on r7 but can calculate
-						rf[13]		<= rf[11] + ((cache_data[0] + 'd1) << 2);
+						// sl is only used by: 9588	ldr.w	r5, [sl]
+						// don't need to write back
+						temp		<= rf[11] + ((cache_data[0] + 'd1) << 2) /*synthesis keep*/;
 						
 						// 953a	ldr.w	r3, [fp, r3, lsl #2]			
 						cache_data_req		<= 'b1;
@@ -145,8 +146,9 @@ always @(posedge clk) begin
 						
 						// 9588	ldr.w	r5, [sl]
 						// The DLI loads r5 and overwritten by this insn
+						// sl is not written back, the content is in temp
 						cache_data_req		<= 'b1;
-						cache_r_addr[0]	<= rf[13];
+						cache_r_addr[0]	<= temp;
 						
 						// 956e	ldr.w	r4, [r9, r1]
 						// r9 is only used to load r4, and it's from
@@ -204,7 +206,7 @@ always @(posedge clk) begin
 						rf[1]		<= rf[1] + 'd4;
 						
 						// 958c	adds	r3, #1
-						rf[3]		<= rf[3] + 'd1;
+						rf[3]		<= rf[3] + 'd1 /*synthesis keep*/;
 						
 						// 9588	ldr.w	r5, [sl]
 						// The DLI loads r5 and overwritten by this insn
