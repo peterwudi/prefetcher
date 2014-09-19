@@ -6,8 +6,12 @@ always @(posedge clk) begin
 	if (reset) begin
 		state				<= 'b0;
 		state_cycle		<= 'b0;
-		cache_data		<= 'b0;
-		strBuf_data		<= 'b0;
+		cache_data[0]	<= 'b0;
+		cache_data[1]	<= 'b0;
+		strBuf_data[0]	<= 'b0;
+		strBuf_data[1]	<= 'b0;
+		wren[0]			<= 'b0;
+		wren[1]			<= 'b0;
 		c					<= 'b0;
 		z					<= 'b0;
 		n					<= 'b0;
@@ -36,11 +40,13 @@ always @(posedge clk) begin
 		strBuf_data_req	<= 'b0;
 		
 		if (wait_cache & cache_data_ready) begin
-			cache_data <= cache_data_i;
+			cache_data[0] <= cache_data_i[0];
+			cache_data[1] <= cache_data_i[1];
 		end
 		
 		if (wait_strBuf & strBuf_data_ready) begin
-			strBuf_data <= strBuf_data_i;
+			strBuf_data[0] <= strBuf_data_i[0];
+			strBuf_data[1] <= strBuf_data_i[1];
 		end
 	end
 	else begin
@@ -71,87 +77,69 @@ always @(posedge clk) begin
 				end
 			end
 			'd1: begin
-				// 0x9338 - 0x9362
+				// 0x9338 - 0x9362 + 0x938e-0x939a
 				case (state_cycle)
 					'd0: begin
-						// ldr.w	sl, [r9, #8]!
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[9] + 'd8;
+						// 9338:	ldr.w	sl, [r9, #8]!
+						cache_data_req		<= 'b1;
+						cache_r_addr[0]	<= rf[9] + 'd8;
 
+						// 933c:	ldr	r0, [sp, #36]
+						cache_r_addr[1]	<= rf[13] + 'd36;
+						
 						state_cycle <= 'd1;
 					end
 					'd1: begin
-						rf[10]			<= cache_data;
+						rf[10]		<= cache_data[0];
+						rf[0]			<= cache_data[1];
 					
-						// ldr	r0, [sp, #36]
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[13] + 'd36;
+						// 933e:	add.w	r3, r0, sl, lsl #3
+						// 9346:	ldrd	r4, r5, [r3]
+						// => ldrd r4, r5, [r0+sl<<3]
+						cache_data_req		<= 'b1;
+						cache_r_addr[0]	<= cache_data[0] + cache_data[1] << 3;
+						// Know it's a double load, just need a flag,
+						// no need to calculate addr
 						
 						state_cycle <= 'd2;
 					end
 					'd2: begin
-						rf[0]			<= cache_data;
+						rf[4]			<= cache_data[0];
+						rf[5]			<= cache_data[1];
 						
-						// add.w	r3, r0, sl, lsl #3
-						rf[3]			<= rf[0] + rf[10] << 3;
+						// 9352:	ldrd	r2, r3, [sp, #24]
+						cache_data_req		<= 'b1;
+						cache_r_addr[0]	<= rf[13] + 'd24;
+						
+						
+						// 938e:	mov.w	r0, r4, rrx
+						rf[0]	<= {c, rf[4][31:1]};
 						
 						state_cycle <= 'd3;
 					end
 					'd3: begin
-						// ldrd	r4, r5, [r3]
-						// First load: ldr r4, [r3]
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[3];
-						
-						state_cycle <= 'd4;
-					end
-					'd4: begin
-						rf[4]		<= cache_data;
-						
-						// ldrd	r4, r5, [r3]
-						// Second load: ldr r5, [r3, #4]
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[3] + 'd4;
-						
-						state_cycle <= 'd5;
-					end
-					'd5: begin
-						rf[5]		<= cache_data;
-					
-						// ldrd	r2, r3, [sp, #24]
-						// First load: ldr r2, [sp, #24]
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[13] + 'd24;
-						
-						state_cycle <= 'd6;
-					end
-					'd6: begin
-						rf[2]		<= cache_data;
-					
-						// ldrd	r2, r3, [sp, #24]
-						// Second load: ldr r3, [sp, #28]
-						cache_data_req	<= 'b1;
-						cache_r_addr	<= rf[13] + 'd28;
-						
-						// strd	r2, r3, [sp, #8]
-						// First store: str r2, [sp #8]
+						// 935e:	strd	r2, r3, [sp, #8]
 						w_addr		= rf[13] + 'd8;
-						w_data		= cache_data;
+						w_data		= cache_data[0];
+						w_data		= cache_data[1];
 						
-						state_cycle <= 'd7;
-					end
-					'd7: begin
-						rf[3]		<= cache_data;
+						// 9396:	lsls	r3, r0, #4
+						// flags are immediately updated by cmp
+						rf[3]	<= rf[0]	<< 4;
 						
-						// strd	r2, r3, [sp, #8]
-						// Second store: str r3, [sp #12]
-						w_addr		= rf[13] + 'd12;
-						w_data		= cache_data;
-						
-						// b.n	938c <make_bfs_tree+0x140>
-						state_cycle <= 'd0;
-						state			<= 'd5;
-					end
+						// 9392:	and.w	r2, r4, #1
+						// 9398:	cmp	r2, #0
+						// => cmp r4&1 , #0
+						// 939a:	bne.n	9364 <make_bfs_tree+0x118>
+						if (rf[4]&1'b1 != 0) begin
+							state_cycle <= 'd0;
+							state			<= 'd3;
+						end
+						else begin
+							state_cycle <= 'd0;
+							state			<= 'd2;
+						end
+					end						
 					default: begin
 						cache_data_req		<= 'b0;
 						strBuf_data_req	<= 'b0;

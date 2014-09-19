@@ -1,6 +1,6 @@
-`define		spmvm
+//`define		spmvm
+`define	graph
 //`define	svm
-//`define	graph
 
 
 

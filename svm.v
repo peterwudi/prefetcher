@@ -5,8 +5,12 @@ always @(posedge clk) begin
 	if (reset) begin
 		state				<= 'b0;
 		state_cycle		<= 'b0;
-		cache_data		<= 'b0;
-		strBuf_data		<= 'b0;
+		cache_data[0]	<= 'b0;
+		cache_data[1]	<= 'b0;
+		strBuf_data[0]	<= 'b0;
+		strBuf_data[1]	<= 'b0;
+		wren[0]			<= 'b0;
+		wren[1]			<= 'b0;
 		c					<= 'b0;
 		z					<= 'b0;
 		n					<= 'b0;
@@ -35,11 +39,13 @@ always @(posedge clk) begin
 		strBuf_data_req	<= 'b0;
 		
 		if (wait_cache & cache_data_ready) begin
-			cache_data <= cache_data_i;
+			cache_data[0] <= cache_data_i[0];
+			cache_data[1] <= cache_data_i[1];
 		end
 		
 		if (wait_strBuf & strBuf_data_ready) begin
-			strBuf_data <= strBuf_data_i;
+			strBuf_data[0] <= strBuf_data_i[0];
+			strBuf_data[1] <= strBuf_data_i[1];
 		end
 	end
 	else begin
