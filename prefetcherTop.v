@@ -42,8 +42,8 @@ reg	[3:0]		state;
 reg 	[4:0] 	state_cycle;
 
 // Temp register
-reg	[31:0]	temp;
-reg	[32:0]	carry_test;	
+reg			[31:0]	temp;
+reg signed	[32:0]	carry_test;	
 
 
 // Flags
